@@ -7,8 +7,12 @@
     "url": "https://github.com/lumine-code/native-icons/issues"
   },
   "keywords": [
-    "icons",
-    "native"
+    "file-icons",
+    "os-icons",
+    "tree-view",
+    "explorer",
+    "finder",
+    "system-icons"
   ],
   "version": "1.0.0",
   "license": "MIT",
