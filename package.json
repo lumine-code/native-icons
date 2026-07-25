@@ -1,7 +1,7 @@
 {
   "name": "native-icons",
   "author": "lumine-code",
-  "description": "Show native OS file icons in the editor",
+  "description": "Show native OS file icons in the tree view, tabs, and archive view.",
   "repository": "https://github.com/lumine-code/native-icons",
   "bugs": {
     "url": "https://github.com/lumine-code/native-icons/issues"

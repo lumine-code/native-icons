@@ -1,6 +1,8 @@
 # native-icons
 
-Show native OS file icons in the editor. Uses the icon that Windows Explorer, macOS Finder, or the Linux desktop theme would show for the same file type.
+Show native OS file icons in the tree view, tabs, and archive view.
+
+Uses the icon that Windows Explorer, macOS Finder, or the Linux desktop theme would show for the same file type.
 
 ## Features
 
