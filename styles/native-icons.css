@@ -1,4 +1,5 @@
-.tree-view .native-icon::before, .tab-bar .native-icon::before {
+.tree-view .native-icon::before,
+.tab-bar .native-icon::before {
   display: inline-block;
   height: 16px !important;
   width: 16px !important;
