@@ -25,118 +25,96 @@ function waitFor(predicate, timeout = 8000) {
 }
 
 describe("native-icons", () => {
-  let mainModule;
+  let service;
+
+  const iconFor = (filePath, hints = {}) => service.iconFor({ path: filePath, hints });
 
   beforeEach(async () => {
-    ({ mainModule } = await atom.packages.activatePackage("native-icons"));
+    const { mainModule } = await atom.packages.activatePackage("native-icons");
+    service = mainModule.provideIcons();
   });
 
-  it("attaches its style element on activation", () => {
-    expect(document.head.querySelector("style[data-native-icons]")).not.toBeNull();
+  it("declares itself above the glyph-font providers", () => {
+    expect(service.priority).toBe(100);
+    expect(service.handles).toEqual(["path"]);
+    // Answers arrive from the OS after the fact, so the registry has to be told.
+    expect(service.async).toBe(true);
+    expect(typeof service.onDidChange).toBe("function");
   });
 
-  describe("in support mode (default)", () => {
-    it("does not hand out the icon services", () => {
-      expect(atom.config.get("native-icons.mode")).toBe("support");
-      expect(mainModule.provideIconsClass()).toBeUndefined();
-      expect(mainModule.provideIconsElement()).toBeUndefined();
-    });
+  // Installing this package alongside a glyph set has to change nothing until
+  // the user says which files they want it for.
+  it("claims nothing while the greenlist is empty", () => {
+    expect(atom.config.get("native-icons.greenlist")).toEqual([]);
+    expect(iconFor(__filename)).toBeNull();
   });
 
-  describe("in service mode", () => {
-    beforeEach(() => {
-      atom.config.set("native-icons.mode", "service");
+  describe("with a greenlist", () => {
+    beforeEach(() => atom.config.set("native-icons.greenlist", ["*.js"]));
+
+    it("eventually answers with an image descriptor", async () => {
+      // The first ask is a cache miss, so it declines and reports back later.
+      expect(iconFor(__filename)).toBeNull();
+
+      const descriptor = await waitFor(() => iconFor(__filename));
+      expect(descriptor.render).toBe("image");
+      expect(descriptor.source).toContain("data:image");
     });
 
-    describe("the icons.class service", () => {
-      it("returns native icon classes for a file path", () => {
-        const service = mainModule.provideIconsClass();
-        expect(service).toBeDefined();
-        const classes = service.iconClassForPath(__filename, "tree-view");
-        expect(Array.isArray(classes)).toBe(true);
-        expect(classes).toContain("native-icon");
-        expect(classes).toContain("native-icon-js");
-      });
+    it("reports the paths it can now answer for", async () => {
+      const callback = jasmine.createSpy("onDidChange");
+      service.onDidChange(callback);
 
-      it("returns the directory icon class for a directory path", () => {
-        const service = mainModule.provideIconsClass();
-        expect(service.iconClassForPath(__dirname)).toBe("icon-file-directory");
-      });
+      iconFor(__filename);
+      await waitFor(() => callback.calls.count() > 0);
 
-      it("eventually writes a background-image rule for the extension", async () => {
-        const service = mainModule.provideIconsClass();
-        service.iconClassForPath(__filename, "tree-view");
-        const styleEl = document.head.querySelector("style[data-native-icons]");
-        await waitFor(() =>
-          Array.from(styleEl.sheet.cssRules).some((rule) =>
-            rule.cssText.includes("native-icon-js"),
-          ),
-        );
-      });
+      // Scoped to the paths that were declined, so one resolved extension does
+      // not repaint an entire tree.
+      expect(callback.calls.mostRecent().args[0].paths).toContain(__filename);
     });
 
-    describe("the icons.element service", () => {
-      it("tags a file element and untags it on dispose", () => {
-        const addIconToElement = mainModule.provideIconsElement();
-        expect(typeof addIconToElement).toBe("function");
-
-        const element = document.createElement("span");
-        const disposable = addIconToElement(element, __filename);
-        expect(element.classList.contains("native-icon")).toBe(true);
-        expect(element.classList.contains("native-icon-js")).toBe(true);
-        expect(element.getAttribute("data-native-icon-key")).toBe(".js");
-
-        disposable.dispose();
-        expect(element.classList.contains("native-icon")).toBe(false);
-        expect(element.classList.contains("native-icon-js")).toBe(false);
-        expect(element.hasAttribute("data-native-icon-key")).toBe(false);
-      });
-
-      it("tags a directory element with the folder icon class", () => {
-        const addIconToElement = mainModule.provideIconsElement();
-        const element = document.createElement("span");
-        const disposable = addIconToElement(element, __dirname);
-        expect(element.classList.contains("icon-file-directory")).toBe(true);
-        disposable.dispose();
-        expect(element.classList.contains("icon-file-directory")).toBe(false);
-      });
-    });
-  });
-
-  describe("support-mode greenlist", () => {
-    it("compiles a CSS rule per greenlisted pattern", async () => {
-      atom.config.set("native-icons.greenlist", ["*.js"]);
-      const styleEl = document.head.querySelector("style[data-native-icons]");
-      await waitFor(() =>
-        Array.from(styleEl.sheet.cssRules).some((rule) =>
-          rule.selectorText?.includes('[data-name$=".js" i]'),
-        ),
-      );
+    it("leaves files outside the greenlist alone", () => {
+      expect(iconFor("/p/notes.txt")).toBeNull();
     });
 
-    it("excludes blacklisted patterns from greenlist selectors", async () => {
+    it("lets the blacklist win", () => {
       atom.config.set("native-icons.blacklist", ["*.min.js"]);
-      atom.config.set("native-icons.greenlist", ["*.js"]);
-      const styleEl = document.head.querySelector("style[data-native-icons]");
-      const rule = await waitFor(() =>
-        Array.from(styleEl.sheet.cssRules).find((r) => r.selectorText?.includes('".js"')),
-      );
-      expect(rule.selectorText).toContain(':not([data-name$=".min.js" i])');
+      expect(iconFor("/p/jquery.min.js")).toBeNull();
+    });
+
+    it("declines directories so the editor's folder icons answer", () => {
+      expect(iconFor(__dirname, { directory: true })).toBeNull();
+    });
+
+    it("resolves relative paths against the project", async () => {
+      atom.project.setPaths([path.dirname(__dirname)]);
+      const relative = path.join("spec", path.basename(__filename));
+      iconFor(relative);
+      const descriptor = await waitFor(() => iconFor(relative));
+      expect(descriptor.render).toBe("image");
     });
   });
 
-  describe("deactivation", () => {
-    it("removes the style element", async () => {
-      await atom.packages.deactivatePackage("native-icons");
-      expect(document.head.querySelector("style[data-native-icons]")).toBeNull();
+  describe("with a match-all greenlist", () => {
+    beforeEach(() => atom.config.set("native-icons.greenlist", ["*"]));
+
+    it("claims every file", async () => {
+      iconFor("/p/notes.txt");
+      const descriptor = await waitFor(() => iconFor("/p/notes.txt"));
+      expect(descriptor.render).toBe("image");
     });
   });
 
-  it("resolves relative paths against the project", () => {
-    atom.config.set("native-icons.mode", "service");
-    atom.project.setPaths([path.dirname(__dirname)]);
-    const service = mainModule.provideIconsClass();
-    const classes = service.iconClassForPath(path.join("spec", path.basename(__filename)));
-    expect(classes).toContain("native-icon-js");
+  it("ignores patterns it cannot express", () => {
+    spyOn(console, "warn");
+    atom.config.set("native-icons.greenlist", ["a?b", "we*rd*"]);
+    expect(console.warn).toHaveBeenCalled();
+    expect(iconFor("/p/axb")).toBeNull();
+  });
+
+  // No stylesheet, no generated rules, no class tagging: the descriptor carries
+  // the data URL and the editor renders it.
+  it("installs no stylesheet of its own", () => {
+    expect(document.head.querySelector("style[data-native-icons]")).toBeNull();
   });
 });

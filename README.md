@@ -7,9 +7,8 @@ Uses the icon that Windows Explorer, macOS Finder, or the Linux desktop theme wo
 ## Features
 
 - **Native OS icons**: uses system file icons instead of bundled icon fonts.
-- **Support mode**: adds native icons only for greenlisted files, alongside another icon package.
-- **Service mode**: registers icon services and can be used as the primary icon package.
-- **CSS-compatible filters**: greenlist and blacklist support simple filename patterns in support mode.
+- **Composes with glyph sets**: claims only the files you list and leaves the rest to whichever icon package would otherwise draw them.
+- **Filename filters**: greenlist and blacklist accept simple filename patterns, with `*` for every file.
 - **Custom file types**: honours the `core.customFileTypes` mappings.
 - **Embedded-icon binaries**: `.exe`, `.lnk`, `.ico`, `.dll`, `.url`, `.scr`, `.msi` can use their real per-file icon.
 
@@ -19,14 +18,15 @@ To install `native-icons` search for _native-icons_ in the Install pane of the L
 
 ## Usage
 
-Use `support` mode when another icon package is already active. It does not register services or mutate DOM elements. It injects one CSS rule per greenlisted pattern using the `.icon[data-name...]::before` convention used by tree-view, tabs, fuzzy finder, find-and-replace, archive-view, and many community packages. Files outside the greenlist are untouched.
+Nothing gets a native icon until the greenlist says so, so installing this package alongside a glyph set such as `more-icons` changes nothing on its own.
 
-Use `service` mode when `native-icons` is your primary icon package. It registers services, tags supported file elements, and returns icon classes to consumers. Greenlist and blacklist are ignored in this mode. Files receive their native file icon, and directories use the default folder icon.
+Greenlist the files you want the system icon for. `*.exe, *.lnk` is the common case — binaries carry their own icon and no glyph font can show it — while everything else keeps the glyph it already had. Set the greenlist to `*` to use native icons throughout.
+
+Icons arrive from the operating system asynchronously. A file whose icon is not cached yet is left to the next icon package for that one paint and swapped in as soon as it arrives, so a fresh window fills in rather than showing gaps. The cache is keyed by extension, so this costs one swap per file type rather than one per file.
 
 ## Services
 
-- **[icons.class](docs/icons.class.md)** (`1.0.0`): provided to icon consumers (tree-view, tabs, fuzzy finder, archive-view) in service mode; exposes `iconClassForPath(filePath, context)` returning a CSS class name or array of class names for the given path.
-- **[icons.element](docs/icons.element.md)** (`1.0.0`): provided to packages that iconize their own DOM elements in service mode; exposes `addIconToElement(element, filePath, options)` which attaches a native icon and returns a `Disposable` that removes it.
+- **[icons.provider](https://lumine-code.github.io/docs.html#services/icons.provider)** (`1.0.0`): provided to the editor's icon registry; answers greenlisted file paths with the system icon as an image descriptor, declines everything else so another provider can answer, and reports through `onDidChange` when an icon finishes resolving.
 
 ## Contributing
 

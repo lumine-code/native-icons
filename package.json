@@ -27,37 +27,16 @@
     "format:check": "prettier --check ."
   },
   "providedServices": {
-    "icons.element": {
+    "icons.provider": {
       "versions": {
-        "1.0.0": "provideIconsElement"
-      }
-    },
-    "icons.class": {
-      "versions": {
-        "1.0.0": "provideIconsClass"
+        "1.0.0": "provideIcons"
       }
     }
   },
   "configSchema": {
-    "mode": {
-      "title": "Mode",
-      "description": "Pick `support` when running alongside another icon package like `file-icons`: no services are registered and only listed files get a native icon, everything else keeps the icon assigned by the other package. Pick `service` when `native-icons` is your only icon source: registers `icons.element` and `icons.class` services so the tree-view, tabs, archive-view, and other consumers receive icons from this package. Restart needed.",
-      "type": "string",
-      "enum": [
-        {
-          "value": "support",
-          "description": "Support - overlay alongside another icon package"
-        },
-        {
-          "value": "service",
-          "description": "Service - register services as the primary icon source"
-        }
-      ],
-      "default": "support"
-    },
     "greenlist": {
       "title": "Greenlist",
-      "description": "*Only support mode*. Apply native icons to filenames matching one of these CSS-compatible patterns. Service mode ignores this setting. Support mode requires a greenlist. Supported forms are `*.ext`, `*ext`, `name*`, `*sub*`, and `exact`, matched case-insensitively against `data-name`. Entries may contain comma-space separated patterns, e.g. `*.dat, *ipy`. Patterns containing `?` or `*` in the middle are ignored with a console warning.",
+      "description": "Show native icons for filenames matching one of these patterns, and leave every other file to whichever icon package would otherwise draw it. Use `*` for all files. The other forms are `*.ext`, `*ext`, `name*`, `*sub*`, and `exact`, matched case-insensitively against the file name. Entries may contain comma-space separated patterns, e.g. `*.dat, *ipy`. Patterns containing `?` or `*` in the middle are ignored with a console warning. Empty means this package draws nothing.",
       "type": "array",
       "items": {
         "type": "string"
@@ -66,7 +45,7 @@
     },
     "blacklist": {
       "title": "Blacklist",
-      "description": "*Only support mode*. Never apply native icons to filenames matching one of these CSS-compatible patterns. Service mode ignores this setting. Same syntax and comma-space separated entries as greenlist. Blacklist always wins. Examples: `*.min.js`, `*.bak`, `*~`.",
+      "description": "Never show a native icon for filenames matching one of these patterns. Same syntax and comma-space separated entries as the greenlist. The blacklist always wins. Examples: `*.min.js`, `*.bak`, `*~`.",
       "type": "array",
       "items": {
         "type": "string"
