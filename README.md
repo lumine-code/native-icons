@@ -25,8 +25,8 @@ Use `service` mode when `native-icons` is your primary icon package. It register
 
 ## Services
 
-- **file-icons.classes** (`1.0.0`): provided to icon consumers (tree-view, tabs, fuzzy finder, archive-view) in service mode; exposes `iconClassForPath(filePath, context)` returning a CSS class name or array of class names for the given path.
-- **file-icons.elements** (`1.0.0`): provided to packages that iconize their own DOM elements in service mode; exposes `addIconToElement(element, filePath, options)` which attaches a native icon and returns a `Disposable` that removes it.
+- **icons.class** (`1.0.0`): provided to icon consumers (tree-view, tabs, fuzzy finder, archive-view) in service mode; exposes `iconClassForPath(filePath, context)` returning a CSS class name or array of class names for the given path.
+- **icons.element** (`1.0.0`): provided to packages that iconize their own DOM elements in service mode; exposes `addIconToElement(element, filePath, options)` which attaches a native icon and returns a `Disposable` that removes it.
 
 ## Contributing
 

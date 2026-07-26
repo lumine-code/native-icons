@@ -27,12 +27,12 @@
     "format:check": "prettier --check ."
   },
   "providedServices": {
-    "file-icons.elements": {
+    "icons.element": {
       "versions": {
         "1.0.0": "provideElementIcons"
       }
     },
-    "file-icons.classes": {
+    "icons.class": {
       "versions": {
         "1.0.0": "provideFileIcons"
       }
@@ -41,7 +41,7 @@
   "configSchema": {
     "mode": {
       "title": "Mode",
-      "description": "Pick `support` when running alongside another icon package like `file-icons`: no services are registered and only listed files get a native icon, everything else keeps the icon assigned by the other package. Pick `service` when `native-icons` is your only icon source: registers `file-icons.elements` and `file-icons.classes` services so the tree-view, tabs, archive-view, and other consumers receive icons from this package. Restart needed.",
+      "description": "Pick `support` when running alongside another icon package like `file-icons`: no services are registered and only listed files get a native icon, everything else keeps the icon assigned by the other package. Pick `service` when `native-icons` is your only icon source: registers `icons.element` and `icons.class` services so the tree-view, tabs, archive-view, and other consumers receive icons from this package. Restart needed.",
       "type": "string",
       "enum": [
         {

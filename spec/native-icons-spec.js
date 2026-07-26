@@ -48,7 +48,7 @@ describe("native-icons", () => {
       atom.config.set("native-icons.mode", "service");
     });
 
-    describe("the file-icons.classes service", () => {
+    describe("the icons.class service", () => {
       it("returns native icon classes for a file path", () => {
         const service = mainModule.provideFileIcons();
         expect(service).toBeDefined();
@@ -75,7 +75,7 @@ describe("native-icons", () => {
       });
     });
 
-    describe("the file-icons.elements service", () => {
+    describe("the icons.element service", () => {
       it("tags a file element and untags it on dispose", () => {
         const addIconToElement = mainModule.provideElementIcons();
         expect(typeof addIconToElement).toBe("function");
