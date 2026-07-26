@@ -38,8 +38,8 @@ describe("native-icons", () => {
   describe("in support mode (default)", () => {
     it("does not hand out the icon services", () => {
       expect(atom.config.get("native-icons.mode")).toBe("support");
-      expect(mainModule.provideFileIcons()).toBeUndefined();
-      expect(mainModule.provideElementIcons()).toBeUndefined();
+      expect(mainModule.provideIconsClass()).toBeUndefined();
+      expect(mainModule.provideIconsElement()).toBeUndefined();
     });
   });
 
@@ -50,7 +50,7 @@ describe("native-icons", () => {
 
     describe("the icons.class service", () => {
       it("returns native icon classes for a file path", () => {
-        const service = mainModule.provideFileIcons();
+        const service = mainModule.provideIconsClass();
         expect(service).toBeDefined();
         const classes = service.iconClassForPath(__filename, "tree-view");
         expect(Array.isArray(classes)).toBe(true);
@@ -59,12 +59,12 @@ describe("native-icons", () => {
       });
 
       it("returns the directory icon class for a directory path", () => {
-        const service = mainModule.provideFileIcons();
+        const service = mainModule.provideIconsClass();
         expect(service.iconClassForPath(__dirname)).toBe("icon-file-directory");
       });
 
       it("eventually writes a background-image rule for the extension", async () => {
-        const service = mainModule.provideFileIcons();
+        const service = mainModule.provideIconsClass();
         service.iconClassForPath(__filename, "tree-view");
         const styleEl = document.head.querySelector("style[data-native-icons]");
         await waitFor(() =>
@@ -77,7 +77,7 @@ describe("native-icons", () => {
 
     describe("the icons.element service", () => {
       it("tags a file element and untags it on dispose", () => {
-        const addIconToElement = mainModule.provideElementIcons();
+        const addIconToElement = mainModule.provideIconsElement();
         expect(typeof addIconToElement).toBe("function");
 
         const element = document.createElement("span");
@@ -93,7 +93,7 @@ describe("native-icons", () => {
       });
 
       it("tags a directory element with the folder icon class", () => {
-        const addIconToElement = mainModule.provideElementIcons();
+        const addIconToElement = mainModule.provideIconsElement();
         const element = document.createElement("span");
         const disposable = addIconToElement(element, __dirname);
         expect(element.classList.contains("icon-file-directory")).toBe(true);
@@ -135,7 +135,7 @@ describe("native-icons", () => {
   it("resolves relative paths against the project", () => {
     atom.config.set("native-icons.mode", "service");
     atom.project.setPaths([path.dirname(__dirname)]);
-    const service = mainModule.provideFileIcons();
+    const service = mainModule.provideIconsClass();
     const classes = service.iconClassForPath(path.join("spec", path.basename(__filename)));
     expect(classes).toContain("native-icon-js");
   });

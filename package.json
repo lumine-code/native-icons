@@ -29,12 +29,12 @@
   "providedServices": {
     "icons.element": {
       "versions": {
-        "1.0.0": "provideElementIcons"
+        "1.0.0": "provideIconsElement"
       }
     },
     "icons.class": {
       "versions": {
-        "1.0.0": "provideFileIcons"
+        "1.0.0": "provideIconsClass"
       }
     }
   },
