@@ -26,7 +26,7 @@ Icons arrive from the operating system asynchronously. A file whose icon is not 
 
 ## Services
 
-- **[icons.provider](https://lumine-code.github.io/docs.html#services/icons.provider)** (`1.0.0`): provided to the editor's icon registry; answers greenlisted file paths with the system icon as an image descriptor, declines everything else so another provider can answer, and reports through `onDidChange` when an icon finishes resolving.
+- **icons.provider** (`1.0.0`): provided to the editor's icon registry; answers greenlisted file paths with the system icon as an image descriptor, declines everything else so another provider can answer, and reports through `onDidChange` when an icon finishes resolving.
 
 ## Contributing
 
