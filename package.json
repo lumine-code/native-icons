@@ -21,7 +21,7 @@
   },
   "main": "./lib/main.js",
   "scripts": {
-    "test": "cd ../lumine && npm run test:only -- ../native-icons/spec",
+    "test": "cd ../../lumine && npm run test:only -- ../pkg_lumine/native-icons/spec",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
