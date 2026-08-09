@@ -30,7 +30,7 @@ describe("native-icons", () => {
   const iconFor = (filePath, hints = {}) => service.iconFor({ path: filePath, hints });
 
   beforeEach(async () => {
-    const { mainModule } = await atom.packages.activatePackage("native-icons");
+    const { mainModule } = await lumine.packages.activatePackage("native-icons");
     service = mainModule.provideIcons();
   });
 
@@ -45,12 +45,12 @@ describe("native-icons", () => {
   // Installing this package alongside a glyph set has to change nothing until
   // the user says which files they want it for.
   it("claims nothing while the greenlist is empty", () => {
-    expect(atom.config.get("native-icons.greenlist")).toEqual([]);
+    expect(lumine.config.get("native-icons.greenlist")).toEqual([]);
     expect(iconFor(__filename)).toBeNull();
   });
 
   describe("with a greenlist", () => {
-    beforeEach(() => atom.config.set("native-icons.greenlist", ["*.js"]));
+    beforeEach(() => lumine.config.set("native-icons.greenlist", ["*.js"]));
 
     it("eventually answers with an image descriptor", async () => {
       // The first ask is a cache miss, so it declines and reports back later.
@@ -78,7 +78,7 @@ describe("native-icons", () => {
     });
 
     it("lets the blacklist win", () => {
-      atom.config.set("native-icons.blacklist", ["*.min.js"]);
+      lumine.config.set("native-icons.blacklist", ["*.min.js"]);
       expect(iconFor("/p/jquery.min.js")).toBeNull();
     });
 
@@ -87,7 +87,7 @@ describe("native-icons", () => {
     });
 
     it("resolves relative paths against the project", async () => {
-      atom.project.setPaths([path.dirname(__dirname)]);
+      lumine.project.setPaths([path.dirname(__dirname)]);
       const relative = path.join("spec", path.basename(__filename));
       iconFor(relative);
       const descriptor = await waitFor(() => iconFor(relative));
@@ -96,7 +96,7 @@ describe("native-icons", () => {
   });
 
   describe("with a match-all greenlist", () => {
-    beforeEach(() => atom.config.set("native-icons.greenlist", ["*"]));
+    beforeEach(() => lumine.config.set("native-icons.greenlist", ["*"]));
 
     it("claims every file", async () => {
       iconFor("/p/notes.txt");
@@ -107,7 +107,7 @@ describe("native-icons", () => {
 
   it("ignores patterns it cannot express", () => {
     spyOn(console, "warn");
-    atom.config.set("native-icons.greenlist", ["a?b", "we*rd*"]);
+    lumine.config.set("native-icons.greenlist", ["a?b", "we*rd*"]);
     expect(console.warn).toHaveBeenCalled();
     expect(iconFor("/p/axb")).toBeNull();
   });
