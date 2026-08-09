@@ -5,7 +5,7 @@ const prettier = require("eslint-config-prettier");
 
 // Modules provided by the Lumine/Electron runtime rather than this package's own
 // manifest, so they aren't resolvable by eslint-plugin-n.
-const runtimeModules = ["atom", "@electron/remote"];
+const runtimeModules = ["atom"];
 
 module.exports = [
   js.configs.recommended,
