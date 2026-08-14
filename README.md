@@ -14,7 +14,7 @@ Uses the icon that Windows Explorer, macOS Finder, or the Linux desktop theme wo
 
 ## Installation
 
-To install `native-icons` search for _native-icons_ in the Install pane of the Lumine settings or run `lumine --install lumine-code/native-icons`.
+To install `native-icons` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/native-icons`.
 
 ## Usage
 
@@ -26,7 +26,7 @@ Icons arrive from the operating system asynchronously. A file whose icon is not 
 
 ## Services
 
-- **icons.provider** (`1.0.0`): provided to the editor's icon registry; answers greenlisted file paths with the system icon as an image descriptor, declines everything else so another provider can answer, and reports through `onDidChange` when an icon finishes resolving.
+- `icons.provider`: provided to the editor's icon registry; answers greenlisted file paths with the system icon as an image descriptor, declines everything else so another provider can answer, and reports through `onDidChange` when an icon finishes resolving.
 
 ## Contributing
 
