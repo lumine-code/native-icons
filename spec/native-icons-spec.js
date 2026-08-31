@@ -59,6 +59,8 @@ describe("native-icons", () => {
       const descriptor = await waitFor(() => iconFor(__filename));
       expect(descriptor.render).toBe("image");
       expect(descriptor.source).toContain("data:image");
+      expect(descriptor.classes).toContain("icon-image");
+      expect(Object.isFrozen(descriptor)).toBe(true);
     });
 
     it("reports the paths it can now answer for", async () => {
