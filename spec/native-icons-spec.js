@@ -27,6 +27,10 @@ function waitFor(predicate, timeout = 8000) {
 describe("native-icons", () => {
   let service;
 
+  async function settleIcons() {
+    for (let count = 0; count < 40; count++) await Promise.resolve();
+  }
+
   const iconFor = (filePath, hints = {}) => service.iconFor({ path: filePath, hints });
 
   beforeEach(async () => {
@@ -112,6 +116,96 @@ describe("native-icons", () => {
     lumine.config.set("native-icons.greenlist", ["a?b", "we*rd*"]);
     expect(console.warn).toHaveBeenCalled();
     expect(iconFor("/p/axb")).toBeNull();
+  });
+
+  describe("failed lookups", () => {
+    let getFileIcon;
+
+    beforeEach(() => {
+      lumine.config.set("native-icons.greenlist", ["*.js"]);
+      getFileIcon = spyOn(lumine.application, "getFileIcon").and.rejectWith(
+        new Error("The file icon is temporarily unavailable"),
+      );
+    });
+
+    it("does not keep asking the OS when failure would repaint and ask again", async () => {
+      let repaints = 0;
+      const subscription = service.onDidChange(() => {
+        repaints++;
+        // Stand in for the icon registry's repaint, bounded so the old failure
+        // feedback loop cannot leave an unending microtask chain in the suite.
+        if (repaints < 4) iconFor(__filename);
+      });
+      try {
+        expect(iconFor(__filename)).toBeNull();
+        await settleIcons();
+
+        expect(repaints).toBe(0);
+        expect(getFileIcon).toHaveBeenCalledTimes(1);
+      } finally {
+        subscription.dispose();
+      }
+    });
+
+    it("retries an independent request and repaints when the icon becomes available", async () => {
+      const repaint = jasmine.createSpy("repaint");
+      const subscription = service.onDidChange(repaint);
+      const image = "data:image/png;base64,ZmFrZQ==";
+      try {
+        expect(iconFor(__filename)).toBeNull();
+        await settleIcons();
+        expect(repaint).not.toHaveBeenCalled();
+
+        getFileIcon.and.resolveTo(image);
+        expect(iconFor(__filename)).toBeNull();
+        await settleIcons();
+
+        expect(getFileIcon).toHaveBeenCalledTimes(2);
+        expect(repaint).toHaveBeenCalledOnceWith({ paths: [__filename] });
+        expect(iconFor(__filename).source).toBe(image);
+        expect(getFileIcon).toHaveBeenCalledTimes(2);
+      } finally {
+        subscription.dispose();
+      }
+    });
+
+    it("does not repaint for an empty icon response", async () => {
+      getFileIcon.and.resolveTo(null);
+      const repaint = jasmine.createSpy("repaint");
+      const subscription = service.onDidChange(repaint);
+      try {
+        expect(iconFor(__filename)).toBeNull();
+        await settleIcons();
+
+        expect(repaint).not.toHaveBeenCalled();
+      } finally {
+        subscription.dispose();
+      }
+    });
+
+    it("keeps a replacement resolver's pending paths until its own response arrives", async () => {
+      let finishOld, finishCurrent;
+      getFileIcon.and.callFake(() => new Promise((resolve) => (finishOld = resolve)));
+      iconFor(__filename);
+      await lumine.packages.deactivatePackage("native-icons");
+      const current = (await lumine.packages.activatePackage("native-icons")).mainModule;
+      service = current.provideIcons();
+      getFileIcon.and.callFake(() => new Promise((resolve) => (finishCurrent = resolve)));
+      const repaint = jasmine.createSpy("repaint");
+      const subscription = service.onDidChange(repaint);
+      try {
+        iconFor(__filename);
+        finishOld("data:image/png;base64,b2xk");
+        await settleIcons();
+        expect(repaint).not.toHaveBeenCalled();
+
+        finishCurrent("data:image/png;base64,Y3VycmVudA==");
+        await settleIcons();
+        expect(repaint).toHaveBeenCalledOnceWith({ paths: [__filename] });
+      } finally {
+        subscription.dispose();
+      }
+    });
   });
 
   // No stylesheet, no generated rules, no class tagging: the descriptor carries
