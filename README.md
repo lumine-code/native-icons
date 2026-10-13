@@ -12,6 +12,8 @@ Uses the icon that Windows Explorer, macOS Finder, or the Linux desktop theme wo
 - **Custom file types**: honours the `core.customFileTypes` mappings.
 - **Embedded-icon binaries**: `.exe`, `.lnk`, `.ico`, `.dll`, `.url`, `.scr`, `.msi` can use their real per-file icon.
 
+![Display native file icons in the project tree.](.github/demo.png)
+
 ## Installation
 
 To install `native-icons` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/native-icons`.

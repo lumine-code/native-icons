@@ -1,0 +1,16 @@
+{
+  "title": "native-icons",
+  "description": "Display native file icons in the project tree.",
+  "recordedOn": "2026-10-13",
+  "sourceRevision": "a76b827de59fd7c49e2c618f2ab0c7e1809f83f7",
+  "mode": "normal",
+  "fontSettings": "default",
+  "images": [
+    {
+      "file": "demo.png",
+      "label": "Display native file icons in the project tree.",
+      "width": 1200,
+      "height": 760
+    }
+  ]
+}
