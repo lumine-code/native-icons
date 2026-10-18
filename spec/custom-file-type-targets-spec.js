@@ -45,7 +45,7 @@ describe("Native Icons Core custom file types", () => {
     ) {
       throw new Error("Owned scratch escaped the private temporary root");
     }
-    fs.rmSync(scratch, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
+    await fs.promises.rm(scratch, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
   });
 
   async function expectPythonIcon(relativePath, customTypes) {
