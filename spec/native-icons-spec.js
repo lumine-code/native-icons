@@ -1,29 +1,5 @@
 const path = require("path");
 
-// The spec runner freezes `setTimeout`, so poll on animation frames instead.
-function waitFor(predicate, timeout = 8000) {
-  const start = Date.now();
-  return new Promise((resolve, reject) => {
-    const check = () => {
-      let value;
-      try {
-        value = predicate();
-      } catch (error) {
-        reject(error);
-        return;
-      }
-      if (value) {
-        resolve(value);
-      } else if (Date.now() - start > timeout) {
-        reject(new Error("Timed out waiting for condition"));
-      } else {
-        requestAnimationFrame(check);
-      }
-    };
-    check();
-  });
-}
-
 describe("native-icons", () => {
   let service;
 
@@ -32,6 +8,12 @@ describe("native-icons", () => {
   }
 
   const iconFor = (filePath, hints = {}) => service.iconFor({ path: filePath, hints });
+
+  async function waitForIcon(filePath) {
+    let descriptor;
+    await conditionPromise(() => (descriptor = iconFor(filePath)), "the native icon", 8000);
+    return descriptor;
+  }
 
   beforeEach(async () => {
     const { mainModule } = await lumine.packages.activatePackage("native-icons");
@@ -60,7 +42,7 @@ describe("native-icons", () => {
       // The first ask is a cache miss, so it declines and reports back later.
       expect(iconFor(__filename)).toBeNull();
 
-      const descriptor = await waitFor(() => iconFor(__filename));
+      const descriptor = await waitForIcon(__filename);
       expect(descriptor.render).toBe("image");
       expect(descriptor.source).toContain("data:image");
       expect(descriptor.classes).toContain("icon-image");
@@ -72,7 +54,11 @@ describe("native-icons", () => {
       service.onDidChange(callback);
 
       iconFor(__filename);
-      await waitFor(() => callback.calls.count() > 0);
+      await conditionPromise(
+        () => callback.calls.count() > 0,
+        "the native icon change event",
+        8000,
+      );
 
       // Scoped to the paths that were declined, so one resolved extension does
       // not repaint an entire tree.
@@ -96,7 +82,7 @@ describe("native-icons", () => {
       lumine.project.setPaths([path.dirname(__dirname)]);
       const relative = path.join("spec", path.basename(__filename));
       iconFor(relative);
-      const descriptor = await waitFor(() => iconFor(relative));
+      const descriptor = await waitForIcon(relative);
       expect(descriptor.render).toBe("image");
     });
   });
@@ -106,7 +92,7 @@ describe("native-icons", () => {
 
     it("claims every file", async () => {
       iconFor("/p/notes.txt");
-      const descriptor = await waitFor(() => iconFor("/p/notes.txt"));
+      const descriptor = await waitForIcon("/p/notes.txt");
       expect(descriptor.render).toBe("image");
     });
   });
